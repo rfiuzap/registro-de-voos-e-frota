@@ -1,0 +1,5 @@
+# Uploads são apenas imagens: impede execução de scripts nesta pasta.
+<FilesMatch "\.(php|php\d|phtml|phar|pl|py|cgi|sh)$">
+    Require all denied
+</FilesMatch>
+Options -Indexes

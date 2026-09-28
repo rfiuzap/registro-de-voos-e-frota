@@ -1,0 +1,27 @@
+# Configuração local de cada instalação (senhas do banco, ambiente)
+config.php
+
+# Backups, pacotes e rascunhos locais
+*.zip
+*.bak
+database/backup_*.sql
+deploy/
+scratch/
+.vscode/
+
+# Fotos enviadas pelos usuários; só as das aeronaves iniciais vão para o Git
+uploads/*
+!uploads/258dd25710638bbfbbc423ab.jpg
+!uploads/2ea5abd9f5c0668730ee3006.jpg
+!uploads/4d60aac8a2b5a28d421cd8c2.webp
+!uploads/5619b5da63c632b9319d3d13.jpg
+!uploads/5bb7ccfe445e02e4d5fbc1f3.jpg
+!uploads/6f3c847a014793200129f307.png
+!uploads/7a95b919ce3572278b7b610b.webp
+!uploads/89340e36d36d4de50bbabb2b.png
+!uploads/9bad26756d4f487f0cd0ebb4.jpg
+!uploads/bb6931bd811c6988c0dc705f.jpg
+!uploads/caaa1d2d2d77cded9b9e4a87.jpg
+!uploads/f9751899f7754e04a7e2cc5f.png
+!uploads/fa3aecf5d550bf0853a1401c.png
+!uploads/.htaccess

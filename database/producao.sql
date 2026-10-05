@@ -148,6 +148,11 @@ CREATE TABLE `voos` (
   CONSTRAINT `fk_voos_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+-- TBO (migracao_tbo.sql): colunas adicionadas depois dos INSERTs posicionais acima.
+ALTER TABLE `aeronaves`
+  ADD COLUMN `tbo_valor` decimal(14,2) NOT NULL DEFAULT 0.00,
+  ADD COLUMN `tbo_horas` int(11) NOT NULL DEFAULT 0;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

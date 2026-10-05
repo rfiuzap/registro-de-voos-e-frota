@@ -5601,3 +5601,8 @@ dialog p {
     border-color: var(--danger-border);
     color: #b91c1c;
 }
+.calc-tabela-comparativo thead .calc-sub-celula {
+    margin: 2px 0 0;
+    text-transform: none;
+    letter-spacing: 0;
+}

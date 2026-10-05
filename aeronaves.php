@@ -77,6 +77,8 @@ if (($_SERVER["REQUEST_METHOD"] ?? "") === "POST") {
     $pressurizado = $_POST["pressurizado"] ?? "";
     $consumoGph = (float) ($_POST["consumo_gph_aeronave"] ?? 0);
     $valor = (float) str_replace(".", "", $_POST["valor"] ?? 0);
+    $tboValor = (float) str_replace(".", "", $_POST["tbo_valor"] ?? 0);
+    $tboHoras = (int) str_replace(".", "", $_POST["tbo_horas"] ?? 0);
     $visibilidade = ($_POST["visibilidade"] ?? "") === "privada" ? "privada" : "publica";
     $foto = $aeronaveEditar["foto"] ?? null;
     $autonomiaValida = preg_match("/^([0-9]{2}):([0-5][0-9])$/", $autonomia);
@@ -100,13 +102,13 @@ if (($_SERVER["REQUEST_METHOD"] ?? "") === "POST") {
         }
     }
 
-    if ($erro === "" && ($fabricante === "" || $modelo === "" || $ano < 1 || $ano > 9999 || $velocidadeCruzeiro < 0 || $velocidadeSubida < 0 || $razaoSubida < 0 || $tetoOperacional < 0 || $altitudeCruzeiroIdeal < 0 || !$autonomiaValida || $capacidadeTanque < 0 || $pesoVazio < 0 || $pesoMaximoDecolagem < 0 || $cargaUtil < 0 || !in_array($tipoCombustivel, ["Avgas", "JetA"], true) || $potencia < 0 || $motor === "" || $assentos < 0 || !in_array($pressurizado, ["Sim", "Não"], true) || $consumoGph < 0 || $valor < 0)) {
+    if ($erro === "" && ($fabricante === "" || $modelo === "" || $ano < 1 || $ano > 9999 || $velocidadeCruzeiro < 0 || $velocidadeSubida < 0 || $razaoSubida < 0 || $tetoOperacional < 0 || $altitudeCruzeiroIdeal < 0 || !$autonomiaValida || $capacidadeTanque < 0 || $pesoVazio < 0 || $pesoMaximoDecolagem < 0 || $cargaUtil < 0 || !in_array($tipoCombustivel, ["Avgas", "JetA"], true) || $potencia < 0 || $motor === "" || $assentos < 0 || !in_array($pressurizado, ["Sim", "Não"], true) || $consumoGph < 0 || $valor < 0 || $tboValor < 0 || $tboHoras < 0)) {
         $erro = "Preencha corretamente os dados da aeronave.";
     } elseif ($acao === "editar" && $id > 0) {
         $nomeAeronaveAnterior = trim(($aeronaveEditar["fabricante"] ?? "") . " " . ($aeronaveEditar["modelo"] ?? ""));
         $nomeAeronaveAtual = $fabricante . " " . $modelo;
-        $stmt = $conn->prepare("UPDATE aeronaves SET fabricante=?, modelo=?, ano=?, velocidade_cruzeiro=?, velocidade_subida=?, razao_subida=?, teto_operacional=?, altitude_cruzeiro_ideal=?, autonomia=?, capacidade_tanque=?, peso_vazio=?, peso_maximo_decolagem=?, carga_util=?, tipo_combustivel=?, potencia=?, motor=?, assentos=?, pressurizado=?, consumo_gph=?, valor=?, foto=?, visibilidade=? WHERE id=? AND usuario_id=?");
-        $stmt->bind_param("ssidddiisddddsdsisddssii", $fabricante, $modelo, $ano, $velocidadeCruzeiro, $velocidadeSubida, $razaoSubida, $tetoOperacional, $altitudeCruzeiroIdeal, $autonomia, $capacidadeTanque, $pesoVazio, $pesoMaximoDecolagem, $cargaUtil, $tipoCombustivel, $potencia, $motor, $assentos, $pressurizado, $consumoGph, $valor, $foto, $visibilidade, $id, $usuarioId);
+        $stmt = $conn->prepare("UPDATE aeronaves SET fabricante=?, modelo=?, ano=?, velocidade_cruzeiro=?, velocidade_subida=?, razao_subida=?, teto_operacional=?, altitude_cruzeiro_ideal=?, autonomia=?, capacidade_tanque=?, peso_vazio=?, peso_maximo_decolagem=?, carga_util=?, tipo_combustivel=?, potencia=?, motor=?, assentos=?, pressurizado=?, consumo_gph=?, valor=?, tbo_valor=?, tbo_horas=?, foto=?, visibilidade=? WHERE id=? AND usuario_id=?");
+        $stmt->bind_param("ssidddiisddddsdsisdddissii", $fabricante, $modelo, $ano, $velocidadeCruzeiro, $velocidadeSubida, $razaoSubida, $tetoOperacional, $altitudeCruzeiroIdeal, $autonomia, $capacidadeTanque, $pesoVazio, $pesoMaximoDecolagem, $cargaUtil, $tipoCombustivel, $potencia, $motor, $assentos, $pressurizado, $consumoGph, $valor, $tboValor, $tboHoras, $foto, $visibilidade, $id, $usuarioId);
         $stmt->execute();
         $stmt->close();
         if ($nomeAeronaveAnterior !== "" && $nomeAeronaveAnterior !== $nomeAeronaveAtual) {
@@ -124,8 +126,8 @@ if (($_SERVER["REQUEST_METHOD"] ?? "") === "POST") {
         header("Location: aeronaves.php");
         exit;
     } else {
-        $stmt = $conn->prepare("INSERT INTO aeronaves (fabricante, modelo, ano, velocidade_cruzeiro, velocidade_subida, razao_subida, teto_operacional, altitude_cruzeiro_ideal, autonomia, capacidade_tanque, peso_vazio, peso_maximo_decolagem, carga_util, tipo_combustivel, potencia, motor, assentos, pressurizado, consumo_gph, valor, foto, visibilidade, usuario_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssidddiisddddsdsisddssi", $fabricante, $modelo, $ano, $velocidadeCruzeiro, $velocidadeSubida, $razaoSubida, $tetoOperacional, $altitudeCruzeiroIdeal, $autonomia, $capacidadeTanque, $pesoVazio, $pesoMaximoDecolagem, $cargaUtil, $tipoCombustivel, $potencia, $motor, $assentos, $pressurizado, $consumoGph, $valor, $foto, $visibilidade, $usuarioId);
+        $stmt = $conn->prepare("INSERT INTO aeronaves (fabricante, modelo, ano, velocidade_cruzeiro, velocidade_subida, razao_subida, teto_operacional, altitude_cruzeiro_ideal, autonomia, capacidade_tanque, peso_vazio, peso_maximo_decolagem, carga_util, tipo_combustivel, potencia, motor, assentos, pressurizado, consumo_gph, valor, tbo_valor, tbo_horas, foto, visibilidade, usuario_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssidddiisddddsdsisdddissi", $fabricante, $modelo, $ano, $velocidadeCruzeiro, $velocidadeSubida, $razaoSubida, $tetoOperacional, $altitudeCruzeiroIdeal, $autonomia, $capacidadeTanque, $pesoVazio, $pesoMaximoDecolagem, $cargaUtil, $tipoCombustivel, $potencia, $motor, $assentos, $pressurizado, $consumoGph, $valor, $tboValor, $tboHoras, $foto, $visibilidade, $usuarioId);
         $stmt->execute();
         $stmt->close();
         $mensagem = "Aeronave cadastrada com sucesso.";
@@ -239,6 +241,8 @@ function setaOrdenacaoAeronaves(string $coluna, string $ordenarAtual, string $di
     $valModelo = $aeronaveEditar["modelo"] ?? "";
     $valAno = !empty($aeronaveEditar["ano"]) ? (int) $aeronaveEditar["ano"] : "";
     $valValor = !empty($aeronaveEditar["valor"]) ? number_format((int) $aeronaveEditar["valor"], 0, ",", ".") : "";
+    $valTboValor = !empty($aeronaveEditar["tbo_valor"]) ? number_format((int) $aeronaveEditar["tbo_valor"], 0, ",", ".") : "";
+    $valTboHoras = !empty($aeronaveEditar["tbo_horas"]) ? number_format((int) $aeronaveEditar["tbo_horas"], 0, ",", ".") : "";
     $valMotor = $aeronaveEditar["motor"] ?? "";
     $valPotencia = !empty($aeronaveEditar["potencia"]) ? number_format((int) $aeronaveEditar["potencia"], 0, ",", ".") : "";
     $valAssentos = !empty($aeronaveEditar["assentos"]) ? number_format((int) $aeronaveEditar["assentos"], 0, ",", ".") : "";
@@ -330,6 +334,20 @@ function setaOrdenacaoAeronaves(string $coluna, string $ordenarAtual, string $di
                             <span class="unidade-badge">US$</span>
                         </div>
                         <input type="text" id="campoValor" name="valor" placeholder="Ex: 850.000" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')" value="<?= htmlspecialchars($valValor) ?>" required>
+                    </div>
+                    <div class="campo-aero-item">
+                        <div class="label-com-unidade">
+                            <label for="campoTboValor">Valor Estimado do TBO</label>
+                            <span class="unidade-badge">US$</span>
+                        </div>
+                        <input type="text" id="campoTboValor" name="tbo_valor" placeholder="Ex: 60.000" inputmode="numeric" oninput="this.value = this.value.replace(/D/g, '').replace(/B(?=(d{3})+(?!d))/g, '.')" value="<?= htmlspecialchars($valTboValor) ?>">
+                    </div>
+                    <div class="campo-aero-item">
+                        <div class="label-com-unidade">
+                            <label for="campoTboHoras">Horas para o TBO</label>
+                            <span class="unidade-badge">h</span>
+                        </div>
+                        <input type="text" id="campoTboHoras" name="tbo_horas" placeholder="Ex: 2.000" inputmode="numeric" oninput="this.value = this.value.replace(/D/g, '').replace(/B(?=(d{3})+(?!d))/g, '.')" value="<?= htmlspecialchars($valTboHoras) ?>">
                     </div>
                     <div class="campo-aero-item campo-col-span-2">
                         <span class="campo-aero-titulo">Quem pode ver esta aeronave? <span class="obrigatorio">*</span></span>

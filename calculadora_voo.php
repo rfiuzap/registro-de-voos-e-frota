@@ -4,12 +4,16 @@ require "auth.php";
 $usuarioId = usuarioAtualId();
 
 $aeronaves = [];
-$resultado = $conn->query("SELECT id, fabricante, modelo, velocidade_cruzeiro, velocidade_subida, razao_subida, altitude_cruzeiro_ideal, consumo_gph, tipo_combustivel FROM aeronaves WHERE " . sqlAeronavesVisiveis($usuarioId) . " ORDER BY fabricante, modelo");
+$resultado = $conn->query("SELECT id, fabricante, modelo, ano, valor, tbo_valor, tbo_horas, velocidade_cruzeiro, velocidade_subida, razao_subida, altitude_cruzeiro_ideal, consumo_gph, tipo_combustivel FROM aeronaves WHERE " . sqlAeronavesVisiveis($usuarioId) . " ORDER BY fabricante, modelo");
 while ($aeronave = $resultado->fetch_assoc()) {
     $aeronaves[$aeronave["id"]] = [
         "id" => (int) $aeronave["id"],
         "nome" => $aeronave["fabricante"] . " - " . $aeronave["modelo"],
         "modelo" => $aeronave["modelo"],
+        "ano" => (int) $aeronave["ano"],
+        "valor" => (float) $aeronave["valor"],
+        "tboValor" => (float) $aeronave["tbo_valor"],
+        "tboHoras" => (int) $aeronave["tbo_horas"],
         "velocidadeCruzeiro" => (float) $aeronave["velocidade_cruzeiro"],
         "velocidadeSubida" => (float) $aeronave["velocidade_subida"],
         "razaoSubida" => (float) $aeronave["razao_subida"],
@@ -766,7 +770,11 @@ $totalComparativo = 6;
                 ["Combustível por hora", (aviao, c) => emBadge(formatarMoeda(aviao.custoAno / aviao.horasAno), c), aviao => aviao.custoAno / aviao.horasAno],
                 ...METAS_HORAS.map(meta => ["Marca de " + formatarNumero(meta) + " h", (aviao, c) =>
                     `<strong>${emBadge(formatarPrazo(meta / aviao.horasAno), c)}</strong><span class="calc-sub-celula">${formatarMoeda((aviao.custoAno / aviao.horasAno) * meta)}</span>`,
-                    aviao => aviao.horasAno])
+                    aviao => aviao.horasAno]),
+                ["Valor da aeronave", (aviao, c) => aviao.valor > 0 ? emBadge("US$ " + formatarNumero(aviao.valor), c) : "--", aviao => aviao.valor > 0 ? aviao.valor : null],
+                ["Valor estimado do TBO", (aviao, c) => aviao.tboValor > 0 ? emBadge("US$ " + formatarNumero(aviao.tboValor), c) : "--", aviao => aviao.tboValor > 0 ? aviao.tboValor : null],
+                // Mais horas até o TBO é melhor; como o menor valor é o melhor, o ranking usa o valor negativo.
+                ["Horas para o TBO", (aviao, c) => aviao.tboHoras > 0 ? emBadge(formatarNumero(aviao.tboHoras) + " h", c) : "--", aviao => aviao.tboHoras > 0 ? -aviao.tboHoras : null]
             ];
 
             // Classe de destaque por aeronave: menor valor = melhor (verde), maior = pior (vermelho).
@@ -779,10 +787,11 @@ $totalComparativo = 6;
 
             const tr = document.createElement("tr");
             tr.innerHTML = "<th>Indicador</th>" + avioes.map(aviao =>
-                `<th><span class="calc-cor" style="background:${aviao.cor}"></span>${escapeHtml(aviao.nome)}</th>`).join("");
+                `<th><span class="calc-cor" style="background:${aviao.cor}"></span>${escapeHtml(aviao.nome)}${aviao.ano ? `<span class="calc-sub-celula">${aviao.ano}</span>` : ""}</th>`).join("");
             cabecalho.appendChild(tr);
             linhas.forEach(([rotulo, texto, valor]) => {
-                const classes = avioes.length > 1 ? classificar(avioes.map(valor)) : avioes.map(() => "");
+                const valores = avioes.map(valor);
+                const classes = avioes.length > 1 && valores.every(item => item !== null) ? classificar(valores) : avioes.map(() => "");
                 const linha = document.createElement("tr");
                 linha.innerHTML = `<th scope="row">${rotulo}</th>` + avioes.map((aviao, i) => `<td>${texto(aviao, classes[i])}</td>`).join("");
                 corpo.appendChild(linha);
@@ -809,7 +818,7 @@ $totalComparativo = 6;
                         nmAno += rota.distancia * margem * calculo.trechos * ocorrenciasAno;
                         voosAno += calculo.trechos * ocorrenciasAno;
                     });
-                    if (horasAno > 0) avioes.push({ nome: aeronave.modelo, horasAno, custoAno, galoesAno, nmAno, voosAno, cor: CORES_COMPARATIVO[i - 1] });
+                    if (horasAno > 0) avioes.push({ nome: aeronave.modelo, ano: aeronave.ano, valor: aeronave.valor, tboValor: aeronave.tboValor, tboHoras: aeronave.tboHoras, horasAno, custoAno, galoesAno, nmAno, voosAno, cor: CORES_COMPARATIVO[i - 1] });
                 }
             }
 

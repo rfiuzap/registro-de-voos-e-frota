@@ -439,15 +439,11 @@ $totalComparativo = 6;
         function carregarEstado() {
             let salvo = null;
             try { salvo = localStorage.getItem(CHAVE_ESTADO); } catch (erro) { /* armazenamento indisponível */ }
-            if (!salvo) {
-                if (ESTADO_DEMO) aplicarEstado(ESTADO_DEMO);
-                return;
-            }
-            try {
-                aplicarEstado(JSON.parse(salvo));
-            } catch (erro) {
-                console.error("Estado salvo inválido", erro);
-            }
+            let estado = null;
+            try { estado = salvo ? JSON.parse(salvo) : null; } catch (erro) { console.error("Estado salvo inválido", erro); }
+            // Na demo, quem ainda não tem rotas salvas (inclusive um estado vazio gravado em visita anterior) começa com as rotas de exemplo.
+            if (ESTADO_DEMO && !(estado && Array.isArray(estado.rotas) && estado.rotas.length)) estado = ESTADO_DEMO;
+            if (estado) aplicarEstado(estado);
         }
 
         function exportarDados() {

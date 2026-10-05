@@ -18,6 +18,34 @@ while ($aeronave = $resultado->fetch_assoc()) {
         "tipoCombustivel" => (string) $aeronave["tipo_combustivel"]
     ];
 }
+
+// Ambiente demo: a calculadora abre já com rotas de exemplo (ida e volta, todo mês) e aeronaves no comparativo.
+$estadoDemo = null;
+if (ambienteDemo()) {
+    $idPorModelo = static function (string $modelo) use ($aeronaves): string {
+        foreach ($aeronaves as $aeronave) {
+            if (stripos($aeronave["modelo"], $modelo) !== false) {
+                return (string) $aeronave["id"];
+            }
+        }
+        return "";
+    };
+    $rotasDemo = [
+        ["SBMT", "SBNF", 230, 2372, 16],
+        ["SBMT", "SBRJ", 195, 2372, 10],
+        ["SBMT", "SBBH", 266, 2372, 2589],
+        ["SBMT", "SBBR", 464, 2372, 3497]
+    ];
+    $estadoDemo = [
+        "rotas" => array_map(static fn($rota) => [
+            "origem" => $rota[0], "destino" => $rota[1], "distancia" => $rota[2],
+            "altOrigem" => $rota[3], "altDestino" => $rota[4],
+            "meses" => range(1, 12), "qtdMes" => 1, "idaVolta" => true
+        ], $rotasDemo),
+        "form" => ["aeronave_global" => $idPorModelo("S22T")],
+        "comp" => ["ac1" => $idPorModelo("S22T"), "ac2" => $idPorModelo("Bonanza G36"), "ac3" => $idPorModelo("Tbm960")]
+    ];
+}
 $nomesMeses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 $totalComparativo = 6;
 ?>
@@ -281,7 +309,8 @@ $totalComparativo = 6;
 
     <script>
         const AERONAVES = <?= json_encode($aeronaves, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
-        const TOTAL_COMPARATIVO = <?= $totalComparativo ?>;
+        const ESTADO_DEMO = <?= json_encode($estadoDemo) ?>;
+        const TOTAL_COMPARATIVO =<?= $totalComparativo ?>;
         const CHAVE_ESTADO = "calculadoraVoosEstado";
         const METAS_HORAS = [500, 1000, 1500, 2000];
         const PRECO_COMBUSTIVEL = { jeta: 5.96, avgas: 10.70, litrosPorGalao: 3.785411784 };
@@ -410,7 +439,10 @@ $totalComparativo = 6;
         function carregarEstado() {
             let salvo = null;
             try { salvo = localStorage.getItem(CHAVE_ESTADO); } catch (erro) { /* armazenamento indisponível */ }
-            if (!salvo) return;
+            if (!salvo) {
+                if (ESTADO_DEMO) aplicarEstado(ESTADO_DEMO);
+                return;
+            }
             try {
                 aplicarEstado(JSON.parse(salvo));
             } catch (erro) {
